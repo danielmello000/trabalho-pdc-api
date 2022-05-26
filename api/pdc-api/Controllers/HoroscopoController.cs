@@ -9,6 +9,11 @@ namespace pdc_api.Controllers
     [ApiController]
     public class HoroscopoController : ControllerBase
     {
+        /// <summary>
+        /// Busca a sorte do dia do usuário
+        /// </summary>
+        /// <param name="username">Nickname do usuário cadastrado</param>
+        /// <returns>Mensagem com a sorte do dia</returns>
         [HttpGet]
         [Route("sorte-do-dia")]
         public IActionResult SorteDoDia(string username)
