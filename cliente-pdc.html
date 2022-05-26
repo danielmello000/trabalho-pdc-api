@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDC</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha512-bnIvzh6FU75ZKxp0GXLH9bewza/OIw6dLVh9ICg0gogclmYGguQJWl8U30WpbsGTqbIiAwxTsbe76DErLq5EDQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="h-100 justify-content-center align-items-center" id="login-container">
+        <div class="form-container p-5">
+            <form>
+                <div class="form-group">
+                  <label for="username">Digite seu nick</label>
+                  <input type="text" class="form-control form-control-lg" id="username">
+                </div>
+                <div class="form-group oculto" id="signo-row">
+                    <label for="signo">Signo</label>
+                    <select class="form-control form-control-lg" id="signo">
+                        <option value="0">Aries</option>
+                        <option value="1">Touro</option>
+                        <option value="2">Gemeos</option>
+                        <option value="3">Cancer</option>
+                        <option value="4">Leao</option>
+                        <option value="5">Virgem</option>
+                        <option value="6">Libra</option>
+                        <option value="7">Escorpiao</option>
+                        <option value="8">Sagitario</option>
+                        <option value="9">Capricornio</option>
+                        <option value="10">Aquario</option>
+                        <option value="11">Peixes</option>
+                      </select>
+                  </div>
+                <div class="form-group">
+                    <button type="button" class="form-control btn btn-lg btn-primary" onclick="autenticar()">Enviar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="h-100 container oculto pt-5" id="logado-container">
+        <div class="font-28">
+            <div class="my-5">Bem vindo <span id="nick"></span>!</div>
+            <div>Sorte do dia para <span id="signo-user"></span>:</div>
+        </div>
+        <div id="sorte-do-dia" class="font-24 my-5">
+            <div class="spinner-grow text-danger mx-3" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+            <div class="spinner-grow text-danger mx-3" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+            <div class="spinner-grow text-danger mx-3" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+    </div>
+</body>
+<style>
+    html {
+        height: 100%;
+    }
+    body {
+        font-family: 'Montserrat', sans-serif;
+        color: #4A4A4A;
+        margin: 0;
+        line-height: normal;
+        height: 100%;;
+    }
+    .form-container {
+        min-width: 500px;
+        min-height: 500px;
+        margin: auto;
+    }
+    .oculto {
+        display: none;
+    }
+    .font-28 {
+        font-size: 28px;
+    }
+    .font-24 {
+        font-size: 24px;
+    }
+    #login-container {
+        display: flex;
+    }
+</style>
+<script>
+    const apiUrl = "https://localhost:7135/api/";
+    let cadastro = false;
+    $(function() {
+
+    })
+
+    function autenticar() {
+        const username = $("#username").val();
+        if(cadastro){
+            const signo = parseInt($("#signo").val());
+            const data = {username, signo};
+
+            $.ajax({
+                headers: { 
+                'Accept': 'application/json',
+                'Content-Type': 'application/json' 
+                },
+                type: "POST",
+                url: `${apiUrl}usuarios`,
+                data: JSON.stringify(data),
+                success: (res) => showHome(res.data),
+                dataType: "json"
+            });
+        } else {
+            $.get(`${apiUrl}usuarios?username=${username}`, (res) => showHome(res.data))
+            .fail(function(e){
+                const res = e?.responseJSON;
+                if(res.code == 404 && res.message){
+                    cadastro = true;
+                    $("#signo-row").show();
+                } 
+                else {
+                    alert("Ocorreu um erro inesperado.");
+                }
+            });
+        }
+    }
+
+    function showHome(user) {
+        $("#login-container").hide();
+        $("#logado-container").show();
+
+        $("#nick").text(user.username);
+        $("#signo-user").text(getSigno(user.signo));
+        getSorteDia(user.username);
+    }
+
+    function getSigno(i) {
+        const signos = ["Aries", "Touro", "Gemeos", "Cancer", "Leao", "Virgem", "Libra", "Escorpiao", "Sagitario", "Capricornio", "Aquario", "Peixes"];
+        return signos[i];
+    }
+
+    function getSorteDia(username) {
+        $.get(`${apiUrl}horoscopo/sorte-do-dia?username=${username}`, (res) => $("#sorte-do-dia").text(res.data))
+        .fail(function(e){
+            alert("Ocorreu um erro inesperado.");
+        });
+    }
+</script>
+</html>

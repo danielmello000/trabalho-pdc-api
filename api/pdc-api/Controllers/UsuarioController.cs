@@ -32,7 +32,7 @@ namespace pdc_api.Controllers
         public IActionResult Cadastrar(Usuario usuario)
         {
             var success = UsuarioService.CadastrarUsuario(usuario);
-            var res = new BaseResponse();
+            var res = new BaseResponse(usuario);
             return success ? Ok(res.SuccessResponse()) : BadRequest(res.ErrorResponse("Usuário já cadastrado."));
         }
     }

@@ -24,7 +24,7 @@ namespace pdc_api.Controllers
             if (user == null)
                 return BadRequest(res.NotFoundResponse());
 
-            var sorte = HoroscopoService.SorteDoDia(username);
+            var sorte = HoroscopoService.SorteDoDia(user);
             return Ok(res.SuccessResponse(sorte));
         }
     }
